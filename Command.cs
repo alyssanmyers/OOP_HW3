@@ -103,7 +103,20 @@ namespace Baseball
 
         public override void Execute(Database db)
         {
-            // TODO: Implement me!
+            var TempGame = new Game
+            { 
+                Date = Date,
+                Park = db.Parks[ParkId],                     
+                Attendance = Attendance,
+                Visitor = db.Teams[VisitorTeamId],
+                VisitorScore = VisitorScore,
+                Home = db.Teams[HomeTeamId],
+                HomeScore = HomeScore
+            };
+            if (!db.Games.Contains(TempGame))
+            {
+                db.Games.Add(TempGame);
+            }
         }
     }
 
@@ -148,7 +161,13 @@ namespace Baseball
             // Game must match date, home and visitor team exactly
             var game = db.Games.Where(g => g.Date == Date.Date && g.Home.Name == HomeTeamId && g.Visitor.Name == VisitorTeamId).Single();
 
-            //TODO: Implement me!
+            if (db.Games.Contains(game))
+            {
+                game.Park = db.Parks[ParkId];
+                if (Attendance.HasValue) { game.Attendance = Attendance.Value; }
+                if (VisitorScore.HasValue) { game.VisitorScore = VisitorScore.Value; }
+                if (HomeScore.HasValue) { game.HomeScore = HomeScore.Value; }
+            }
         }
     }
 
