@@ -73,6 +73,7 @@ namespace Baseball
             if (!db.Parks.ContainsKey(ParkId))
             {
                 db.Parks.Add(ParkId, new Park { Id = ParkId });
+                db.CurrentCommands.Add(this);
             }
         }
     }
@@ -87,6 +88,7 @@ namespace Baseball
             if (!db.Teams.ContainsKey(TeamId))
             {
                 db.Teams.Add(TeamId, new Team { Name = TeamId, League = League.ToLeague() });
+                if (db.Commands.Last().Key != db.Position) db.CurrentCommands.Add(this);
             }
         }
     }
@@ -116,6 +118,7 @@ namespace Baseball
             if (!db.Games.Contains(TempGame))
             {
                 db.Games.Add(TempGame);
+                if (db.Commands.Last().Key != db.Position) db.CurrentCommands.Add(this);
             }
         }
     }
@@ -142,6 +145,7 @@ namespace Baseball
             if (db.Teams.ContainsKey(TeamId) && !string.IsNullOrEmpty(League))
             {
                 db.Teams[TeamId].League = League.ToLeague();
+                if (db.Commands.Last().Key != db.Position) db.CurrentCommands.Add(this);
             }
         }
     }
@@ -161,15 +165,15 @@ namespace Baseball
             // Game must match date, home and visitor team exactly
             var game = db.Games.Where(g => g.Date == Date.Date && g.Home.Name == HomeTeamId && g.Visitor.Name == VisitorTeamId).Single();
 
-            if (db.Games.Contains(game))
-            {
-                game.Park = db.Parks[ParkId];
-                if (Attendance.HasValue) { game.Attendance = Attendance.Value; }
-                if (VisitorScore.HasValue) { game.VisitorScore = VisitorScore.Value; }
-                if (HomeScore.HasValue) { game.HomeScore = HomeScore.Value; }
-            }
+            game.Park = db.Parks[ParkId];
+            if (Attendance.HasValue) { game.Attendance = Attendance.Value; }
+            if (VisitorScore.HasValue) { game.VisitorScore = VisitorScore.Value; }
+            if (HomeScore.HasValue) { game.HomeScore = HomeScore.Value; }
+
+            if (db.Commands.Last().Key != db.Position) db.CurrentCommands.Add(this);
         }
     }
+
 
 
 
@@ -180,7 +184,8 @@ namespace Baseball
     {
         public override void Execute(Database db)
         {
-            // TODO: Implement me!
+            db.CurrentCommands = new List<DatabaseCommand>();
+            db.Position++;
         }
     }
 
@@ -191,7 +196,7 @@ namespace Baseball
     {
         public override void Execute(Database db)
         {
-            // TODO: Implement me!
+            db.Commands.Add(db.Position, db.CurrentCommands);
         }
     }
 
@@ -199,7 +204,8 @@ namespace Baseball
     {
         public override void Execute(Database db)
         {
-            // TODO: Implement me!
+            db.Commands.Remove(db.Position);
+            db.Position--;
         }
     }
 

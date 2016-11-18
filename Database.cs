@@ -12,6 +12,9 @@ namespace Baseball
         public IDictionary<string, Park> Parks { get; } = new Dictionary<string, Park>();
         public IDictionary<string, Team> Teams { get; } = new Dictionary<string, Team>();
 
+        public IDictionary<int, IList<DatabaseCommand>> Commands { get; set; } = new Dictionary<int, IList<DatabaseCommand>>();
+        public List<DatabaseCommand> CurrentCommands { get; set; } = new List<DatabaseCommand>();
+        internal int Position { get; set; }
 
         public Database()
         {
