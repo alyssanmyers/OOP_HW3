@@ -84,6 +84,7 @@
 -r:"/Users/amyers112011/.nuget/packages/System.Xml.XDocument/4.0.11/ref/netstandard1.3/System.Xml.XDocument.dll"
 "/Users/amyers112011/Dropbox/_School/_Fall2016/_Object-Oriented/HW3/Command.cs"
 "/Users/amyers112011/Dropbox/_School/_Fall2016/_Object-Oriented/HW3/Database.cs"
+"/Users/amyers112011/Dropbox/_School/_Fall2016/_Object-Oriented/HW3/Filter.cs"
 "/Users/amyers112011/Dropbox/_School/_Fall2016/_Object-Oriented/HW3/Game.cs"
 "/Users/amyers112011/Dropbox/_School/_Fall2016/_Object-Oriented/HW3/Program.cs"
 "/Users/amyers112011/Dropbox/_School/_Fall2016/_Object-Oriented/HW3/Team.cs"

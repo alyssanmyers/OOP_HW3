@@ -55,6 +55,12 @@ namespace Baseball
                     break;
                 case "delete":
                     throw new NotImplementedException();
+                case "begin":
+                    return new BeginCommand { };
+                case "commit":
+                    return new CommitCommand { };
+                case "rollback":
+                    return new RollBack { };
                 default:
                     break;
             }
@@ -73,7 +79,6 @@ namespace Baseball
             if (!db.Parks.ContainsKey(ParkId))
             {
                 db.Parks.Add(ParkId, new Park { Id = ParkId });
-                db.CurrentCommands.Add(this);
             }
         }
     }
@@ -88,7 +93,6 @@ namespace Baseball
             if (!db.Teams.ContainsKey(TeamId))
             {
                 db.Teams.Add(TeamId, new Team { Name = TeamId, League = League.ToLeague() });
-                db.CurrentCommands.Add(this);
             }
         }
     }
@@ -118,7 +122,6 @@ namespace Baseball
             if (!db.Games.Contains(TempGame))
             {
                 db.Games.Add(TempGame);
-                db.CurrentCommands.Add(this);
             }
         }
     }
@@ -145,7 +148,6 @@ namespace Baseball
             if (db.Teams.ContainsKey(TeamId) && !string.IsNullOrEmpty(League))
             {
                 db.Teams[TeamId].League = League.ToLeague();
-                db.CurrentCommands.Add(this);
             }
         }
     }
@@ -169,12 +171,18 @@ namespace Baseball
             if (Attendance.HasValue) { game.Attendance = Attendance.Value; }
             if (VisitorScore.HasValue) { game.VisitorScore = VisitorScore.Value; }
             if (HomeScore.HasValue) { game.HomeScore = HomeScore.Value; }
-
-            db.CurrentCommands.Add(this);
         }
     }
 
+    /*  PART ONE
+        list of commands, begin, insert, update, insert, .... 
+        commit and rollback do the same. rollback, go back to first instance of erase the rest after. 
+        commit goes back but also executes the commands in order. goes to start and iterates through the rest.
+        no position needed, one position is important - the last one. 
 
+        PART TWO
+        factory pattern is about creating objects. 
+    */
 
 
     /// <summary>
@@ -184,8 +192,7 @@ namespace Baseball
     {
         public override void Execute(Database db)
         {
-            db.CurrentCommands = new List<DatabaseCommand>();
-            db.Position++;
+            db.Commands = new List<DatabaseCommand>();
         }
     }
 
@@ -196,7 +203,10 @@ namespace Baseball
     {
         public override void Execute(Database db)
         {
-            db.Commands.Add(db.Position, db.CurrentCommands);
+            foreach (var c in db.Commands)
+            {
+                c.Execute(db);
+            }
         }
     }
 
@@ -204,8 +214,10 @@ namespace Baseball
     {
         public override void Execute(Database db)
         {
-            db.Commands.Remove(db.Position);
-            db.Position--;
+            foreach (var c in db.Commands.Skip(1))
+            {
+                db.Commands.Remove(c);
+            }
         }
     }
 

@@ -24,18 +24,6 @@ namespace Baseball
         public Dictionary<string, string> Args { get; set; } = new Dictionary<string, string>();
     }
 
-/*
-
-transaction: revert commands within scope of trans, store? place to store it. in database?
-insert, call execute to database, no transaction they continue to execute
-
-in begin command, this command should tell databse to remember commands, list of command,
-rollback command it should erase up to last transaction. in db internal list of commands.
-first time hit trans, 
-
-*/
-    
-
     public class Program
     {
         public static void Main(string[] args)
@@ -50,10 +38,41 @@ first time hit trans,
             Visitor = db.Teams["8007"], VisitorScore = 2, Home = db.Teams["9234"], HomeScore = 5 };
             db.Games.Add(tempGame);
             
+            /*********************/
+            /* adding commands  */
+            /*********************/
+
             var cmd = ParseArgs(args);
-            DatabaseCommand cm = DatabaseCommand.FromCommand(cmd);
-            
-            cm.Execute(db);
+            if (cmd.Verb == "select")
+            {
+                var dbFlt = Filter.FromCommand(cmd);
+                db.Execute(dbFlt);
+            }
+            else
+            {
+                var dbCmd = DatabaseCommand.FromCommand(cmd);
+                db.Commands.Add(dbCmd);
+                dbCmd.Execute(db);
+            }
+
+            /* mine */
+
+            args = new string[] { "insert", "park", "ParkId", "98765" };
+            cmd = ParseArgs(args);
+            db.Commands.Add(DatabaseCommand.FromCommand(cmd));
+
+            args = new string[] { "insert", "team", "TeamId", "1000", "League", "NA" };
+            cmd = ParseArgs(args);
+            db.Commands.Add(DatabaseCommand.FromCommand(cmd));
+
+            args = new string[] { "commit", "commit" };
+            cmd = ParseArgs(args);
+            db.Commands.Add(DatabaseCommand.FromCommand(cmd));
+            db.Commands.Last().Execute(db);
+
+            /**********************************/
+            /* printing out database elements */
+            /**********************************/
 
             foreach (var c in db.Parks)
             {

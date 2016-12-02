@@ -11,10 +11,7 @@ namespace Baseball
         public IList<Game> Games { get; } = new List<Game>();
         public IDictionary<string, Park> Parks { get; } = new Dictionary<string, Park>();
         public IDictionary<string, Team> Teams { get; } = new Dictionary<string, Team>();
-
-        public IDictionary<int, IList<DatabaseCommand>> Commands { get; set; } = new Dictionary<int, IList<DatabaseCommand>>();
-        public List<DatabaseCommand> CurrentCommands { get; set; } = new List<DatabaseCommand>();
-        internal int Position { get; set; }
+        public List<DatabaseCommand> Commands { get; set; } = new List<DatabaseCommand>();
 
         public Database()
         {
@@ -23,6 +20,11 @@ namespace Baseball
         public void Execute(DatabaseCommand command)
         {
             command.Execute(this);
+        }
+
+        public void Execute(IEnumerable<Filter> filters)
+        {
+            Query(filters);
         }
 
         /// <summary>
@@ -109,6 +111,56 @@ namespace Baseball
                 }
             }
         }
+
+        public IEnumerable<Game> Query(IEnumerable<Filter> filters)
+        {
+            IEnumerable<Game> games = Games;
+            
+            foreach(var filter in filters)
+            {
+                games = Query(filter, games);
+            }
+
+            return games;
+        }
+
+        public IEnumerable<Game> Query(Filter filter, IEnumerable<Game> games)
+        {
+            switch(filter.Type)
+            {
+                case FType.DateFrom: 
+                    return Query((DateFromFilter)filter, games);
+                case FType.DateTo: 
+                    return Query((DateToFilter)filter, games);
+                case FType.HomeTeam: 
+                    return Query((HomeTeamFilter)filter, games);
+                case FType.VisitorTeam: 
+                    return Query((AwayTeamFilter)filter, games);
+                default: 
+                    throw new NullReferenceException();
+            }
+        }
+
+        public IEnumerable<Game> Query(DateFromFilter filter, IEnumerable<Game> games)
+        {
+            return games.Where(g => g.Date > filter.Date);
+        }
+
+        public IEnumerable<Game> Query(DateToFilter filter, IEnumerable<Game> games)
+        {
+            return games.Where(g => g.Date < filter.Date);
+        }
+
+        public IEnumerable<Game> Query(HomeTeamFilter filter, IEnumerable<Game> games)
+        {
+            return games.Where(g => g.Home.Name == filter.Team);
+        }
+
+        public IEnumerable<Game> Query(AwayTeamFilter filter, IEnumerable<Game> games)
+        {
+            return games.Where(g => g.Visitor.Name == filter.Team);
+        }
+
     }
 
     internal static class Extensions
